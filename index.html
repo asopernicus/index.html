@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>35 Од, 35 Учрал</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!--
+  ============================================================
+  SHARED VERSION — backed by a Google Sheet via Apps Script
+  ============================================================
+  1. Set up the Apps Script backend first (see AppsScript-Code.gs).
+  2. Paste the deployed Web App URL into CONFIG.WEB_APP_URL below
+     (search for "PASTE_YOUR_WEB_APP_URL_HERE").
+  3. Host this file (e.g. GitHub Pages) and embed it in Google
+     Sites by URL — see earlier notes on why "Embed code" alone
+     isn't reliable for interactive pages.
+  Without step 2, the page still works but nothing will save or
+  sync between people.
+  ============================================================
+-->
+
+<style>
+  :root{
+    --bg-deep:#0b1220;
+    --bg-deep-2:#141d33;
+    --gold:#d4a93e;
+    --gold-bright:#f2c94c;
+    --cream:#ede6d6;
+    --slate:#8a93a6;
+    --tile-bg: rgba(255,255,255,0.045);
+    --tile-border: rgba(237,230,214,0.14);
+    --line: rgba(212,169,62,0.55);
+    --ok: #7fbf8f;
+    --err: #d97757;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0;
+    background: var(--bg-deep);
+    color:var(--cream);
+    font-family:'Manrope', sans-serif;
+    min-height:100vh;
+  }
+
+  body{
+    background-image:
+      radial-gradient(1.5px 1.5px at 10% 15%, rgba(237,230,214,0.55) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 80% 8%, rgba(237,230,214,0.4) 50%, transparent 51%),
+      radial-gradient(1px 1px at 45% 30%, rgba(237,230,214,0.5) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 65% 60%, rgba(237,230,214,0.35) 50%, transparent 51%),
+      radial-gradient(1px 1px at 25% 75%, rgba(237,230,214,0.45) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 90% 85%, rgba(237,230,214,0.3) 50%, transparent 51%),
+      radial-gradient(1px 1px at 5% 55%, rgba(237,230,214,0.4) 50%, transparent 51%),
+      linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deep-2) 55%, var(--bg-deep) 100%);
+    background-repeat: repeat, repeat, repeat, repeat, repeat, repeat, repeat, no-repeat;
+    background-size: 220px 220px, 260px 260px, 180px 180px, 300px 300px, 240px 240px, 280px 280px, 200px 200px, 100% 100%;
+  }
+
+  .wrap{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 40px;
+  }
+
+  .topbar{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 18px;
+    font-family:'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--slate);
+  }
+
+  .topbar input{
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--tile-border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: var(--cream);
+    font-family:'Space Mono', monospace;
+    font-size: 12px;
+    width: 150px;
+  }
+  .topbar input:focus{ outline:none; border-color: var(--gold); }
+
+  .refresh-btn{
+    background: none;
+    border: 1px solid var(--tile-border);
+    color: var(--cream);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-family:'Space Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .refresh-btn:hover{ border-color: var(--gold); color: var(--gold); }
+
+  header.hero{
+    text-align:center;
+    margin-bottom: 40px;
+  }
+
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(34px, 6vw, 58px);
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+
+  h1 em{
+    font-style: italic;
+    color: var(--gold-bright);
+  }
+
+  .sub{
+    color: var(--slate);
+    font-size: 15px;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .progress{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 12px;
+    margin-top: 26px;
+    font-family:'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--slate);
+  }
+
+  .progress-track{
+    width: 180px;
+    height: 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.08);
+    overflow:hidden;
+    position:relative;
+  }
+
+  .progress-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+    width:0%;
+    transition: width 0.5s ease;
+  }
+
+  .conn-status{
+    font-family:'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--slate);
+    text-align:center;
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+  }
+  .conn-status.err{ color: var(--err); }
+  .conn-status.ok{ color: var(--ok); }
+
+  .sky{
+    position: relative;
+    margin: 0 auto;
+  }
+
+  .constellation{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    overflow: visible;
+  }
+
+  .constellation line{
+    stroke: var(--line);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 4;
+  }
+
+  .grid{
+    position: relative;
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 18px 14px;
+    z-index: 1;
+  }
+
+  @media (max-width: 900px){
+    .grid{ grid-template-columns: repeat(5, 1fr); }
+  }
+  @media (max-width: 560px){
+    .grid{ grid-template-columns: repeat(4, 1fr); gap: 12px 10px; }
+    .topbar{ flex-wrap: wrap; justify-content:center; }
+  }
+
+  .tile{
+    position:relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 1px solid var(--tile-border);
+    background: var(--tile-bg);
+    color: var(--cream);
+    font-family:'Fraunces', serif;
+    font-size: clamp(18px, 2.6vw, 24px);
+    font-weight: 600;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tile:nth-child(3n)  { transform: translateY(6px); }
+  .tile:nth-child(5n)  { transform: translateY(-5px); }
+  .tile:nth-child(7n)  { transform: translateY(3px); }
+
+  .tile:hover, .tile:focus-visible{
+    transform: translateY(-3px) scale(1.05);
+    border-color: var(--gold);
+    outline: none;
+  }
+
+  .tile.done{
+    background: radial-gradient(circle at 35% 30%, rgba(242,201,76,0.9), rgba(212,169,62,0.55) 55%, rgba(212,169,62,0.15) 100%);
+    border-color: var(--gold-bright);
+    color: #1a1406;
+    box-shadow: 0 0 18px rgba(242,201,76,0.55), 0 0 4px rgba(242,201,76,0.8);
+  }
+
+  .tile.selected{
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 0 2px rgba(242,201,76,0.4);
+  }
+
+  .check{
+    position:absolute;
+    top: -4px;
+    right: -4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--tile-border);
+    background: var(--bg-deep);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 12px;
+    color: var(--gold-bright);
+    cursor:pointer;
+  }
+
+  .tile.done .check{
+    background: var(--gold-bright);
+    color: var(--bg-deep);
+    border-color: var(--gold-bright);
+  }
+
+  /* ---- Drawer ---- */
+  .overlay{
+    position: fixed;
+    inset:0;
+    background: rgba(4,7,14,0.55);
+    backdrop-filter: blur(2px);
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.25s ease;
+    z-index: 10;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+
+  .drawer{
+    position: fixed;
+    left:0; right:0; bottom:0;
+    background: linear-gradient(180deg, #182238, #0f1626);
+    border-top: 1px solid var(--tile-border);
+    border-radius: 22px 22px 0 0;
+    padding: 26px 26px 30px;
+    max-height: 78vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(.2,.8,.25,1);
+    z-index: 11;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  }
+  .drawer.open{ transform: translateY(0); }
+
+  .drawer-head{
+    display:flex;
+    align-items:center;
+    gap: 18px;
+    margin-bottom: 10px;
+  }
+
+  .drawer-letter{
+    font-family:'Fraunces', serif;
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--gold-bright);
+    width: 64px;
+    text-align:center;
+  }
+
+  .drawer-titles{ flex:1; }
+
+  .drawer-titles .roman-full{
+    font-family:'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--slate);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .close-btn{
+    background: none;
+    border: 1px solid var(--tile-border);
+    color: var(--cream);
+    border-radius: 50%;
+    width: 34px; height:34px;
+    cursor:pointer;
+    font-size: 16px;
+    line-height:1;
+    flex-shrink:0;
+  }
+  .close-btn:hover{ border-color: var(--gold); color: var(--gold); }
+
+  .meta-row{
+    font-family:'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--slate);
+    margin-bottom: 20px;
+    min-height: 14px;
+  }
+  .meta-row .status.saving{ color: var(--gold); }
+  .meta-row .status.saved{ color: var(--ok); }
+  .meta-row .status.error{ color: var(--err); }
+
+  .field{
+    margin-bottom: 18px;
+  }
+
+  .field label{
+    display:block;
+    font-family:'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 8px;
+  }
+
+  .field input[type="text"],
+  .field input[type="date"],
+  .field textarea{
+    width:100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--tile-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--cream);
+    font-family:'Manrope', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+  }
+
+  .field input::placeholder, .field textarea::placeholder{ color: rgba(237,230,214,0.35); }
+
+  .field input:focus, .field textarea:focus{
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .row{
+    display:flex;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .row .field{ flex:1; min-width: 180px; }
+
+  .stars{
+    display:flex;
+    gap: 6px;
+  }
+  .stars button{
+    background:none;
+    border:none;
+    font-size: 24px;
+    cursor:pointer;
+    color: rgba(237,230,214,0.25);
+    padding:0;
+    line-height:1;
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+  .stars button.filled{ color: var(--gold-bright); }
+  .stars button:hover{ transform: scale(1.15); }
+
+  .done-row{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin-top: 4px;
+    font-family:'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--slate);
+  }
+
+  .done-row input{ width:16px; height:16px; accent-color: var(--gold-bright); }
+
+  @media (prefers-reduced-motion: reduce){
+    .tile, .drawer, .overlay, .progress-fill{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="topbar">
+    <label for="nameInput">Editing as</label>
+    <input type="text" id="nameInput" placeholder="your name" maxlength="24">
+    <button class="refresh-btn" id="refreshBtn">↻ Refresh</button>
+  </div>
+
+  <header class="hero">
+    <div class="eyebrow">Mongolian Alphabet · Shared Date Ideas</div>
+    <h1>35 Үсэг, <em>35 Учрал</em></h1>
+    <p class="sub">Цагаан толгойг шинэ аргаар сурцгаах уу? Шөнийн тэнгэрийг гэрэлтүүлэх 35 оддыг асаацгаая.</p>
+    <div class="progress">
+      <span id="progressLabel">0 / 35 lit</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="conn-status" id="connStatus">connecting…</div>
+  </header>
+
+  <div class="sky">
+    <svg class="constellation" id="constellation"></svg>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-letter" id="drawerLetter">А</div>
+    <div class="drawer-titles">
+      <div class="roman-full" id="drawerRoman">A</div>
+    </div>
+    <button class="close-btn" id="closeBtn" aria-label="Close">&times;</button>
+  </div>
+  <div class="meta-row" id="metaRow"></div>
+
+  <div class="field">
+    <label for="ideaInput">Date idea</label>
+    <input type="text" id="ideaInput" placeholder="e.g. Picnic under the same moon, two timezones apart">
+  </div>
+
+  <div class="field">
+    <label for="descInput">Description</label>
+    <textarea id="descInput" rows="3" placeholder="What happened, how it felt, anything worth remembering"></textarea>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="dateInput">Date</label>
+      <input type="date" id="dateInput">
+    </div>
+    <div class="field">
+      <label>Rating</label>
+      <div class="stars" id="starsRow"></div>
+    </div>
+  </div>
+
+  <div class="done-row">
+    <input type="checkbox" id="doneInput">
+    <label for="doneInput" style="margin:0; text-transform:none; letter-spacing:0; color:var(--cream); font-family:'Manrope',sans-serif; font-size:13px;">Mark this date as done</label>
+  </div>
+</div>
+
+<script>
+  // ------------------------------------------------------------
+  // CONFIG — paste your deployed Apps Script Web App URL here.
+  // See AppsScript-Code.gs for how to create and deploy it.
+  // ------------------------------------------------------------
+  const CONFIG = {
+    WEB_APP_URL: "https://script.google.com/macros/s/AKfycbxk0beIWSIvMpETCErTUXHtK2NofCIgfbr-Qb8olNSB9TkhCkPWvEcGlN5e3abBmptl/exec",
+    POLL_MS: 20000
+  };
+
+  const LETTER_SEED = [
+    { ch:"А", rom:"A" },{ ch:"Б", rom:"B" },{ ch:"В", rom:"V" },{ ch:"Г", rom:"G" },
+    { ch:"Д", rom:"D" },{ ch:"Е", rom:"Ye" },{ ch:"Ё", rom:"Yo" },{ ch:"Ж", rom:"J" },
+    { ch:"З", rom:"Z" },{ ch:"И", rom:"I" },{ ch:"Й", rom:"I" },{ ch:"К", rom:"K" },
+    { ch:"Л", rom:"L" },{ ch:"М", rom:"M" },{ ch:"Н", rom:"N" },{ ch:"О", rom:"O" },
+    { ch:"Ө", rom:"Ö" },{ ch:"П", rom:"P" },{ ch:"Р", rom:"R" },{ ch:"С", rom:"S" },
+    { ch:"Т", rom:"T" },{ ch:"У", rom:"U" },{ ch:"Ү", rom:"Ü" },{ ch:"Ф", rom:"F" },
+    { ch:"Х", rom:"Kh" },{ ch:"Ц", rom:"Ts" },{ ch:"Ч", rom:"Ch" },{ ch:"Ш", rom:"Sh" },
+    { ch:"Щ", rom:"Shch" },{ ch:"Ъ", rom:"—" },{ ch:"Ы", rom:"Y" },{ ch:"Ь", rom:"—" },
+    { ch:"Э", rom:"E" },{ ch:"Ю", rom:"Yu" },{ ch:"Я", rom:"Ya" }
+  ];
+
+  const letters = LETTER_SEED.map((l, i) => ({
+    id: i, ch: l.ch, rom: l.rom,
+    idea: "", desc: "", date: "", rating: 0, done: false,
+    updatedBy: "", updatedAt: ""
+  }));
+
+  let selectedId = null;
+  let saveTimer = null;
+  let pollTimer = null;
+
+  const grid = document.getElementById('grid');
+  const overlay = document.getElementById('overlay');
+  const drawer = document.getElementById('drawer');
+  const closeBtn = document.getElementById('closeBtn');
+  const drawerLetter = document.getElementById('drawerLetter');
+  const drawerRoman = document.getElementById('drawerRoman');
+  const ideaInput = document.getElementById('ideaInput');
+  const descInput = document.getElementById('descInput');
+  const dateInput = document.getElementById('dateInput');
+  const doneInput = document.getElementById('doneInput');
+  const starsRow = document.getElementById('starsRow');
+  const progressLabel = document.getElementById('progressLabel');
+  const progressFill = document.getElementById('progressFill');
+  const constellation = document.getElementById('constellation');
+  const connStatus = document.getElementById('connStatus');
+  const metaRow = document.getElementById('metaRow');
+  const nameInput = document.getElementById('nameInput');
+  const refreshBtn = document.getElementById('refreshBtn');
+
+  function renderGrid(){
+    grid.innerHTML = '';
+    letters.forEach(entry => {
+      const tile = document.createElement('button');
+      tile.className = 'tile' + (entry.done ? ' done' : '') + (entry.id === selectedId ? ' selected' : '');
+      tile.setAttribute('aria-pressed', entry.done ? 'true' : 'false');
+      tile.setAttribute('aria-label', entry.ch + (entry.idea ? ': ' + entry.idea : ' (empty)'));
+      tile.dataset.id = entry.id;
+      tile.innerHTML = entry.ch +
+        '<span class="check" data-id="' + entry.id + '">' + (entry.done ? '&#10003;' : '') + '</span>';
+      tile.addEventListener('click', () => openDrawer(entry.id));
+      grid.appendChild(tile);
+    });
+
+    grid.querySelectorAll('.check').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.dataset.id, 10);
+        const entry = letters[id];
+        entry.done = !entry.done;
+        renderGrid();
+        renderConstellation();
+        updateProgress();
+        if (id === selectedId) doneInput.checked = entry.done;
+        saveEntry(entry);
+      });
+    });
+  }
+
+  function renderConstellation(){
+    constellation.innerHTML = '';
+    const rect = grid.getBoundingClientRect();
+    constellation.setAttribute('width', rect.width);
+    constellation.setAttribute('height', rect.height);
+    constellation.style.width = rect.width + 'px';
+    constellation.style.height = rect.height + 'px';
+
+    const doneTiles = [...grid.querySelectorAll('.tile.done')];
+    if (doneTiles.length < 2) return;
+
+    const points = doneTiles.map(t => {
+      const r = t.getBoundingClientRect();
+      return { x: r.left - rect.left + r.width / 2, y: r.top - rect.top + r.height / 2 };
+    });
+
+    for (let i = 0; i < points.length - 1; i++){
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', points[i].x);
+      line.setAttribute('y1', points[i].y);
+      line.setAttribute('x2', points[i+1].x);
+      line.setAttribute('y2', points[i+1].y);
+      constellation.appendChild(line);
+    }
+  }
+
+  function updateProgress(){
+    const doneCount = letters.filter(l => l.done).length;
+    progressLabel.textContent = doneCount + ' / 35 lit';
+    progressFill.style.width = (doneCount / 35 * 100) + '%';
+  }
+
+  function renderStars(entry){
+    starsRow.innerHTML = '';
+    for (let i = 1; i <= 5; i++){
+      const btn = document.createElement('button');
+      btn.textContent = '★';
+      btn.className = i <= entry.rating ? 'filled' : '';
+      btn.setAttribute('aria-label', i + ' star' + (i > 1 ? 's' : ''));
+      btn.addEventListener('click', () => {
+        entry.rating = (entry.rating === i) ? 0 : i;
+        renderStars(entry);
+        saveEntry(entry);
+      });
+      starsRow.appendChild(btn);
+    }
+  }
+
+  function renderMeta(entry){
+    if (entry.updatedBy || entry.updatedAt){
+      const when = entry.updatedAt ? new Date(entry.updatedAt).toLocaleString() : '';
+      metaRow.innerHTML = 'last edited by <strong>' + (entry.updatedBy || 'someone') + '</strong>' + (when ? ' · ' + when : '') + ' <span class="status" id="statusTag"></span>';
+    } else {
+      metaRow.innerHTML = 'not filled in yet <span class="status" id="statusTag"></span>';
+    }
+  }
+
+  function setStatus(kind, text){
+    const tag = document.getElementById('statusTag');
+    if (!tag) return;
+    tag.className = 'status ' + kind;
+    tag.textContent = text ? ' · ' + text : '';
+  }
+
+  function openDrawer(id){
+    selectedId = id;
+    const entry = letters[id];
+    drawerLetter.textContent = entry.ch;
+    drawerRoman.textContent = entry.rom;
+    ideaInput.value = entry.idea;
+    descInput.value = entry.desc;
+    dateInput.value = entry.date;
+    doneInput.checked = entry.done;
+    renderStars(entry);
+    renderMeta(entry);
+    renderGrid();
+    overlay.classList.add('open');
+    drawer.classList.add('open');
+    stopPolling();
+  }
+
+  function closeDrawer(){
+    flushPendingSave();
+    overlay.classList.remove('open');
+    drawer.classList.remove('open');
+    selectedId = null;
+    renderGrid();
+    startPolling();
+    fetchAll();
+  }
+
+  function debounceSave(entry){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => saveEntry(entry), 700);
+  }
+
+  function flushPendingSave(){
+    if (saveTimer){
+      clearTimeout(saveTimer);
+      saveTimer = null;
+      if (selectedId !== null) saveEntry(letters[selectedId]);
+    }
+  }
+
+  function bindLiveEdits(){
+    ideaInput.addEventListener('input', () => {
+      if (selectedId === null) return;
+      letters[selectedId].idea = ideaInput.value;
+      renderGrid();
+      debounceSave(letters[selectedId]);
+    });
+    descInput.addEventListener('input', () => {
+      if (selectedId === null) return;
+      letters[selectedId].desc = descInput.value;
+      debounceSave(letters[selectedId]);
+    });
+    dateInput.addEventListener('input', () => {
+      if (selectedId === null) return;
+      letters[selectedId].date = dateInput.value;
+      debounceSave(letters[selectedId]);
+    });
+    doneInput.addEventListener('change', () => {
+      if (selectedId === null) return;
+      letters[selectedId].done = doneInput.checked;
+      renderGrid();
+      renderConstellation();
+      updateProgress();
+      saveEntry(letters[selectedId]);
+    });
+  }
+
+  overlay.addEventListener('click', closeDrawer);
+  closeBtn.addEventListener('click', closeDrawer);
+  window.addEventListener('resize', renderConstellation);
+  refreshBtn.addEventListener('click', fetchAll);
+
+  // ---------------- Backend sync ----------------
+
+  function backendReady(){
+    return CONFIG.WEB_APP_URL && CONFIG.WEB_APP_URL.indexOf('PASTE_YOUR') === -1;
+  }
+
+  async function fetchAll(){
+    if (!backendReady()){
+      connStatus.textContent = 'not connected — add your Web App URL in the code to enable saving & syncing';
+      connStatus.className = 'conn-status err';
+      return;
+    }
+    try {
+      const res = await fetch(CONFIG.WEB_APP_URL, { method: 'GET' });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'unknown error');
+      mergeRemote(data.letters);
+      connStatus.textContent = 'synced';
+      connStatus.className = 'conn-status ok';
+    } catch (err){
+      connStatus.textContent = 'could not reach the shared sheet — showing local view only';
+      connStatus.className = 'conn-status err';
+    }
+  }
+
+  function mergeRemote(remoteRows){
+    remoteRows.forEach(r => {
+      const idx = letters.findIndex(l => l.id === Number(r.id));
+      if (idx === -1) return;
+      if (letters[idx].id === selectedId) return; // don't stomp an open editor
+      letters[idx].idea = r.idea || '';
+      letters[idx].desc = r.description || '';
+      letters[idx].date = r.date || '';
+      letters[idx].rating = Number(r.rating) || 0;
+      letters[idx].done = (r.done === true || r.done === 'TRUE' || r.done === 'true');
+      letters[idx].updatedBy = r.updatedBy || '';
+      letters[idx].updatedAt = r.updatedAt || '';
+    });
+    renderGrid();
+    renderConstellation();
+    updateProgress();
+  }
+
+  async function saveEntry(entry){
+    if (!backendReady()) return;
+    setStatus('saving', 'saving…');
+    entry.updatedBy = nameInput.value.trim();
+    const payload = {
+      id: entry.id, letter: entry.ch, roman: entry.rom,
+      idea: entry.idea, description: entry.desc, date: entry.date,
+      rating: entry.rating, done: entry.done, updatedBy: entry.updatedBy
+    };
+    try {
+      const res = await fetch(CONFIG.WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'unknown error');
+      mergeRemote(data.letters);
+      if (selectedId === entry.id) { renderMeta(letters[entry.id]); setStatus('saved', 'saved'); }
+    } catch (err){
+      if (selectedId === entry.id) setStatus('error', 'could not save — will retry on next edit');
+    }
+  }
+
+  function startPolling(){
+    stopPolling();
+    pollTimer = setInterval(fetchAll, CONFIG.POLL_MS);
+  }
+  function stopPolling(){
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  function init(){
+    renderGrid();
+    renderConstellation();
+    updateProgress();
+    bindLiveEdits();
+    fetchAll();
+    startPolling();
+  }
+
+  init();
+</script>
+
+</body>
+</html>
